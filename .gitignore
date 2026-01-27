@@ -1,0 +1,43 @@
+*.iml
+.gradle
+/local.properties
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+.aider*
+app/release/
+build_log.txt
+build_release_log.txt
+release_build.log
+package-lock.json
+app/src/main/res/drawable-nodpi/playstore.png
+app/google-services.json
+
+# IDE - IntelliJ/Android Studio
+/.idea/
+.idea/**
+.idea_modules/
+*.iws
+*.ipr
+
+# Signing keys
+*.jks
+*.keystore
+key.properties
+
+# Build artifacts
+*.apk
+*.aab
+
+# Logs
+*.log
+
+# Keep Gradle wrapper files in the repo
+!gradlew
+!gradlew.bat
+!gradle/wrapper/**
+
+# Security audit (internal use only)
+SECURITY_AUDIT.md

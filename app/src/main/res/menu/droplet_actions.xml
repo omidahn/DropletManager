@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_start"
+        android:icon="@drawable/ic_power"
+        android:title="@string/start" />
+    <item
+        android:id="@+id/action_stop"
+        android:icon="@drawable/ic_power_off"
+        android:title="@string/stop" />
+    <item
+        android:id="@+id/action_reboot"
+        android:icon="@drawable/ic_refresh"
+        android:title="@string/reboot" />
+    <item
+        android:id="@+id/action_snapshot"
+        android:icon="@drawable/ic_camera"
+        android:title="@string/create_snapshot" />
+    <item
+        android:id="@+id/action_backup"
+        android:icon="@drawable/ic_backup"
+        android:title="@string/create_backup" />
+    <item
+        android:id="@+id/action_ssh"
+        android:icon="@drawable/ic_terminal"
+        android:title="@string/ssh_access" />
+    <item
+        android:id="@+id/action_destroy"
+        android:icon="@drawable/ic_delete"
+        android:title="@string/destroy" />
+</menu> 

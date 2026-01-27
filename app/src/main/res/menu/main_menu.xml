@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    
+    <!-- Primary actions -->
+    <item
+        android:id="@+id/action_create_droplet"
+        android:title="@string/create_droplet"
+        android:icon="@drawable/ic_add"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_refresh"
+        android:title="@string/refresh"
+        android:icon="@drawable/ic_refresh"
+        app:showAsAction="ifRoom" />
+
+    <!-- Project management -->
+    <group android:id="@+id/group_project">
+        <item
+            android:id="@+id/action_current_project"
+            android:title="@string/current_project"
+            android:enabled="false"
+            app:showAsAction="never" />
+        <item
+            android:id="@+id/action_switch_project"
+            android:title="@string/switch_project"
+            android:icon="@drawable/ic_folder"
+            app:showAsAction="never" />
+        <item
+            android:id="@+id/action_show_costs"
+            android:title="@string/show_cost_details"
+            android:icon="@drawable/ic_money"
+            app:showAsAction="never" />
+    </group>
+
+    <!-- Settings -->
+    <group android:id="@+id/group_settings">
+        <item
+            android:id="@+id/action_change_token"
+            android:title="@string/change_token"
+            android:icon="@drawable/ic_key"
+            app:showAsAction="never" />
+        <item
+            android:id="@+id/action_logout"
+            android:title="@string/logout"
+            android:icon="@drawable/ic_logout"
+            app:showAsAction="never" />
+    </group>
+</menu> 

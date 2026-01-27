@@ -1,0 +1,24 @@
+{
+  "project_info": {
+    "project_number": "PROJECT_NUMBER",
+    "project_id": "PROJECT_ID",
+    "storage_bucket": "PROJECT_ID.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:PROJECT_NUMBER:android:PROJECT_ID",
+        "android_client_info": {
+          "package_name": "com.omiddd.dropletmanager"
+        }
+      },
+      "api_key": [
+        {
+          "current_key": "YOUR_FIREBASE_API_KEY"
+        }
+      ]
+    }
+  ],
+  "configuration_version": "1"
+}
+ry
