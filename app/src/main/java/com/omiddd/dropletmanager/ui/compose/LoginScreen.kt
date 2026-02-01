@@ -11,10 +11,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.res.painterResource
+import android.graphics.Bitmap
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.omiddd.dropletmanager.R
+import androidx.core.graphics.drawable.toBitmap
 
 @Composable
 fun LoginScreen(
@@ -26,6 +31,13 @@ fun LoginScreen(
     val privacyUrl = stringResource(R.string.privacy_policy_url)
     val signUpUrl = stringResource(R.string.digitalocean_signup_url)
     val createTokenUrl = stringResource(R.string.digitalocean_api_token_url)
+    val context = LocalContext.current
+    val density = LocalDensity.current
+    val logoBitmap = remember(density) {
+        val sizePx = with(density) { 120.dp.roundToPx() }
+        AppCompatResources.getDrawable(context, R.mipmap.ic_launcher)
+            ?.toBitmapSafely(sizePx, sizePx)
+    }
 
     Surface(
         modifier = modifier.fillMaxSize(),
@@ -41,11 +53,13 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_copy),
-                    contentDescription = null,
-                    modifier = Modifier.size(120.dp)
-                )
+                logoBitmap?.let { bitmap ->
+                    Image(
+                        bitmap = bitmap.asImageBitmap(),
+                        contentDescription = stringResource(R.string.app_name),
+                        modifier = Modifier.size(120.dp)
+                    )
+                }
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = stringResource(R.string.app_name),
@@ -91,4 +105,10 @@ fun LoginScreen(
             }
         }
     }
+}
+
+private fun android.graphics.drawable.Drawable.toBitmapSafely(width: Int, height: Int): Bitmap {
+    val safeWidth = if (width > 0) width else 1
+    val safeHeight = if (height > 0) height else 1
+    return toBitmap(safeWidth, safeHeight, Bitmap.Config.ARGB_8888)
 }
