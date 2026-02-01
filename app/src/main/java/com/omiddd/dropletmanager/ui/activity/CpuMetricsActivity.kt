@@ -4,12 +4,18 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import com.omiddd.dropletmanager.ui.theme.DropletManagerTheme
 import com.omiddd.dropletmanager.ui.viewmodel.DropletViewModel
@@ -22,7 +28,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBar
+import java.util.Locale
 
 @androidx.compose.material3.ExperimentalMaterial3Api
 class CpuMetricsActivity : ComponentActivity() {
@@ -80,17 +88,17 @@ class CpuMetricsActivity : ComponentActivity() {
                             Text("No data")
                         }
                         // Centered overlay
-                        androidx.compose.animation.AnimatedVisibility(
+                        AnimatedVisibility(
                             visible = errorOverlay != null,
-                            enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.slideInVertically(initialOffsetY = { it / 10 }),
-                            exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.slideOutVertically(targetOffsetY = { it / 10 })
+                            enter = fadeIn() + slideInVertically(initialOffsetY = { it / 10 }),
+                            exit = fadeOut() + slideOutVertically(targetOffsetY = { it / 10 })
                         ) {
-                            androidx.compose.foundation.layout.Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
-                                androidx.compose.material3.Surface(tonalElevation = 8.dp, shape = androidx.compose.material3.MaterialTheme.shapes.medium) {
-                                    androidx.compose.foundation.layout.Column(modifier = Modifier.padding(16.dp), verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Surface(tonalElevation = 8.dp, shape = MaterialTheme.shapes.medium) {
+                                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                         Text("Error", style = MaterialTheme.typography.titleLarge)
                                         Text(errorOverlay ?: "")
-                                        androidx.compose.foundation.layout.Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                                        Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
                                             Button(onClick = { errorOverlay = null }) { Text("OK") }
                                         }
                                     }
@@ -112,7 +120,7 @@ class CpuMetricsActivity : ComponentActivity() {
 }
 
 // Helpers (duplicated lightweight from details screen)
-private fun formatVal(v: Double): String = String.format("%.2f", v)
+private fun formatVal(v: Double): String = String.format(Locale.getDefault(), "%.2f", v)
 private fun normalizeCpuWithVcpus(v: Double, vcpus: Int): Double {
     var pct = if (v <= 1.0) v * 100.0 else v
     if (vcpus > 1 && pct > 100.0) pct /= vcpus
@@ -134,9 +142,10 @@ private fun LabeledSparkline(points: List<Double>, color: androidx.compose.ui.gr
 }
 
 @Composable
-private fun Sparkline(points: List<Double>, color: androidx.compose.ui.graphics.Color, modifier: Modifier = Modifier.fillMaxWidth().height(160.dp)) {
+private fun Sparkline(points: List<Double>, color: androidx.compose.ui.graphics.Color, modifier: Modifier = Modifier) {
     if (points.isEmpty()) return
-    androidx.compose.foundation.Canvas(modifier = modifier) {
+    val drawModifier = Modifier.fillMaxWidth().height(160.dp).then(modifier)
+    androidx.compose.foundation.Canvas(modifier = drawModifier) {
         val w = size.width
         val h = size.height
         val maxV = (points.maxOrNull() ?: 1.0).let { if (it == 0.0) 1.0 else it }

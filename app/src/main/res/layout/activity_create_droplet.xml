@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:ignore="UnusedResources">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -32,7 +34,8 @@
                 android:id="@+id/nameInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/droplet_name">
+                android:hint="@string/droplet_name"
+                android:labelFor="@id/nameInput">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/nameInput"
@@ -49,7 +52,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:hint="@string/region">
+                android:hint="@string/region"
+                android:labelFor="@id/regionInput">
 
                 <AutoCompleteTextView
                     android:id="@+id/regionInput"
@@ -65,7 +69,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:hint="@string/size">
+                android:hint="@string/size"
+                android:labelFor="@id/sizeInput">
 
                 <AutoCompleteTextView
                     android:id="@+id/sizeInput"
@@ -81,7 +86,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:hint="@string/image">
+                android:hint="@string/image"
+                android:labelFor="@id/imageInput">
 
                 <AutoCompleteTextView
                     android:id="@+id/imageInput"

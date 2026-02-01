@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -12,7 +10,7 @@
         android:id="@+id/titleText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="SSH Details"
+        android:text="@string/ssh_details_title"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         android:layout_gravity="center_horizontal"
         android:paddingBottom="8dp"/>
@@ -21,7 +19,7 @@
         android:id="@+id/descriptionText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Use the following SSH command to access your server:"
+        android:text="@string/ssh_details_description"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         android:layout_gravity="center_horizontal"
         android:paddingBottom="16dp"/>
@@ -30,7 +28,7 @@
         android:id="@+id/sshCommandText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="ssh root@IP_ADDRESS"
+        android:text="@string/ssh_details_command_placeholder"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         android:background="@drawable/ic_copy"
         android:padding="8dp"
@@ -40,7 +38,7 @@
         android:id="@+id/ipAddressText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="IP_ADDRESS"
+        android:text="@string/ssh_details_ip_placeholder"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         android:background="@drawable/ic_copy"
         android:padding="8dp"
@@ -50,22 +48,25 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center">
+        android:gravity="center"
+        style="?android:attr/buttonBarStyle">
 
         <Button
             android:id="@+id/copyCommandButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Copy Command"
+            android:text="@string/ssh_details_copy_command"
             android:drawableStart="@drawable/ic_copy"
-            android:layout_marginEnd="8dp"/>
+            android:layout_marginEnd="8dp"
+            style="?android:attr/buttonBarButtonStyle"/>
 
         <Button
             android:id="@+id/copyIpButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Copy IP"
-            android:drawableStart="@drawable/ic_copy"/>
+            android:text="@string/ssh_details_copy_ip"
+            android:drawableStart="@drawable/ic_copy"
+            style="?android:attr/buttonBarButtonStyle"/>
 
     </LinearLayout>
 

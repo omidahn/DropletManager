@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
+import java.util.Locale
 
 @Composable
 fun LabeledSparkline(points: List<Double>, color: Color, suffix: String) {
@@ -25,17 +26,19 @@ fun LabeledSparkline(points: List<Double>, color: Color, suffix: String) {
     val max = points.maxOrNull() ?: 0.0
     val avg = points.average()
     Sparkline(points = points, color = color)
+    val locale = Locale.getDefault()
     Row(modifier = Modifier.fillMaxWidth().padding(top = 2.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text("min=${String.format("%.2f", min)}$suffix", style = MaterialTheme.typography.bodySmall)
-        Text("avg=${String.format("%.2f", avg)}$suffix", style = MaterialTheme.typography.bodySmall)
-        Text("max=${String.format("%.2f", max)}$suffix", style = MaterialTheme.typography.bodySmall)
+        Text("min=${String.format(locale, "%.2f", min)}$suffix", style = MaterialTheme.typography.bodySmall)
+        Text("avg=${String.format(locale, "%.2f", avg)}$suffix", style = MaterialTheme.typography.bodySmall)
+        Text("max=${String.format(locale, "%.2f", max)}$suffix", style = MaterialTheme.typography.bodySmall)
     }
 }
 
 @Composable
-fun Sparkline(points: List<Double>, color: Color, modifier: Modifier = Modifier.fillMaxWidth().height(64.dp)) {
+fun Sparkline(points: List<Double>, color: Color, modifier: Modifier = Modifier) {
     if (points.isEmpty()) return
-    Canvas(modifier = modifier) {
+    val drawModifier = Modifier.fillMaxWidth().height(64.dp).then(modifier)
+    Canvas(modifier = drawModifier) {
         val w = size.width
         val h = size.height
         val maxV = (points.maxOrNull() ?: 1.0).let { if (it == 0.0) 1.0 else it }

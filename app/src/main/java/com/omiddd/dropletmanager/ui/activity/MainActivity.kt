@@ -54,7 +54,8 @@ class MainActivity : ComponentActivity() {
         val createVm: CreateDropletViewModel by viewModels { createFactory }
 
         setContent {
-            var darkMode by rememberSaveable { mutableStateOf(ThemePreferences.isDark(this)) }
+            val darkModeState = rememberSaveable { mutableStateOf(ThemePreferences.isDark(this)) }
+            val darkMode = darkModeState.value
             DropletManagerTheme(useDarkTheme = darkMode) {
                 MainScreen(
                     listVm = listVm,
@@ -63,7 +64,7 @@ class MainActivity : ComponentActivity() {
                     darkMode = darkMode,
                     onDarkModeChange = { newMode ->
                         ThemePreferences.setDark(this, newMode)
-                        darkMode = newMode
+                        darkModeState.value = newMode
                     },
                     onChangeToken = { newToken ->
                         val trimmed = newToken.trim()
@@ -96,9 +97,12 @@ private fun MainActivity.MainScreen(
     onChangeToken: (String) -> String,
     onLogout: () -> Unit
 ) {
-    var selectedTab by rememberSaveable { mutableStateOf(0) }
-    var selectedDroplet by remember { mutableStateOf<Droplet?>(null) }
-    var token by rememberSaveable { mutableStateOf(initialToken) }
+    val selectedTabState = rememberSaveable { mutableIntStateOf(0) }
+    val selectedTab = selectedTabState.intValue
+    val selectedDropletState = remember { mutableStateOf<Droplet?>(null) }
+    val selectedDroplet = selectedDropletState.value
+    val tokenState = rememberSaveable { mutableStateOf(initialToken) }
+    val token = tokenState.value
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -133,9 +137,9 @@ private fun MainActivity.MainScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
             NavigationBar {
-                NavigationBarItem(selected = selectedTab == 0, onClick = { selectedTab = 0 }, icon = { Icon(Icons.AutoMirrored.Filled.List, null) }, label = { Text(stringResource(R.string.tab_droplets)) })
-                NavigationBarItem(selected = selectedTab == 1, onClick = { selectedTab = 1 }, icon = { Icon(Icons.Default.AddCircle, null) }, label = { Text(stringResource(R.string.tab_create)) })
-                NavigationBarItem(selected = selectedTab == 2, onClick = { selectedTab = 2 }, icon = { Icon(Icons.Default.Settings, null) }, label = { Text(stringResource(R.string.tab_settings)) })
+                NavigationBarItem(selected = selectedTab == 0, onClick = { selectedTabState.intValue = 0 }, icon = { Icon(Icons.AutoMirrored.Filled.List, null) }, label = { Text(stringResource(R.string.tab_droplets)) })
+                NavigationBarItem(selected = selectedTab == 1, onClick = { selectedTabState.intValue = 1 }, icon = { Icon(Icons.Default.AddCircle, null) }, label = { Text(stringResource(R.string.tab_create)) })
+                NavigationBarItem(selected = selectedTab == 2, onClick = { selectedTabState.intValue = 2 }, icon = { Icon(Icons.Default.Settings, null) }, label = { Text(stringResource(R.string.tab_settings)) })
             }
         }
     ) { padding ->
@@ -146,7 +150,7 @@ private fun MainActivity.MainScreen(
                 error = listState.error,
                 costSummary = listVm.costSummary.collectAsState().value,
                 onRefresh = { listVm.loadDroplets() },
-                onDropletClicked = { selectedDroplet = it },
+                onDropletClicked = { selectedDropletState.value = it },
                 onActionClicked = { droplet, action ->
                     listVm.performAction(droplet.id, action) { success, message ->
                         val resolved = message ?: if (success) getString(R.string.action_succeeded) else getString(R.string.action_failed)
@@ -169,7 +173,7 @@ private fun MainActivity.MainScreen(
                 viewModel = createVm,
                 onCreated = {
                     scope.launch { snackbarHostState.showSnackbar(getString(R.string.droplet_created)) }
-                    selectedTab = 0
+                    selectedTabState.intValue = 0
                     listVm.loadDroplets()
                 },
                 modifier = Modifier.padding(padding)
@@ -181,9 +185,9 @@ private fun MainActivity.MainScreen(
                 },
                 onChangeToken = { updated ->
                     val message = onChangeToken(updated)
-                    token = updated.trim()
-                    selectedTab = 0
-                    selectedDroplet = null
+                    tokenState.value = updated.trim()
+                    selectedTabState.intValue = 0
+                    selectedDropletState.value = null
                     scope.launch { snackbarHostState.showSnackbar(message.ifBlank { getString(R.string.token_updated) }) }
                 },
                 onLogout = onLogout,
@@ -209,12 +213,12 @@ private fun MainActivity.MainScreen(
                     val msg = if (success) getString(R.string.droplet_destroyed) else message ?: getString(R.string.droplet_destroy_failed)
                     scope.launch { snackbarHostState.showSnackbar(msg) }
                 }
-                selectedDroplet = null
+                selectedDropletState.value = null
             },
             onOpenConsole = { launchSshConsole(droplet) },
             onOpenUsage = { launchUsageMetrics(droplet, token) },
             accruedCost = listVm.getAccruedCostForDroplet(droplet),
-            onClose = { selectedDroplet = null }
+            onClose = { selectedDropletState.value = null }
         )
     }
 }
