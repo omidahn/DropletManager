@@ -29,6 +29,9 @@ jobs:
         run: |
           echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.keystore"
 
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
       - name: Build release APK
         env:
           KEYSTORE_PATH: ${{ runner.temp }}/release.keystore
