@@ -48,16 +48,16 @@ jobs:
           ${{ secrets.GOOGLE_SERVICES_JSON }}
           EOF
 
-      - name: Build release App Bundle (AAB)
+      - name: Build release APK
         env:
           KEYSTORE_PATH: ${{ runner.temp }}/release.keystore
           KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: ./gradlew bundleRelease
+        run: ./gradlew assembleRelease
 
       - name: Upload GitHub Release asset
         uses: softprops/action-gh-release@v2
         with:
-          files: app/build/outputs/bundle/release/*.aab
+          files: app/build/outputs/apk/release/*.apk
           generate_release_notes: true
