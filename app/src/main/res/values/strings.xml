@@ -87,7 +87,7 @@
     <string name="privacy_policy_url">https://sites.google.com/view/droplet-manager/home</string>
     <string name="close">Close</string>
     <string name="cost_monthly_format">$%.2f/month</string>
-    <string name="cost_monthly_hourly_format">$%.2f/month, $%.4f/hour</string>
+    <string name="cost_monthly_hourly_format">$%1$.2f/month, $%2$.4f/hour</string>
     <string name="accrued_this_month">Accrued This Month</string>
     <string name="accrued_this_month_format">$%.2f</string>
     <string name="features">Features</string>
@@ -99,11 +99,11 @@
     <string name="detail_label_disk">Disk</string>
     <string name="cpu_loading">CPU: Loading…</string>
     <string name="cpu_error">CPU: %s</string>
-    <string name="cpu_stats">last=%.2f%% avg=%.2f%%</string>
+    <string name="cpu_stats">last=%1$.2f%% avg=%2$.2f%%</string>
     <string name="cpu_no_data">CPU: No data</string>
     <string name="memory_loading">Memory: Loading…</string>
     <string name="memory_error">Memory: %s</string>
-    <string name="memory_stats">last=%.2f MB (%.2f%%) avg=%.2f MB (%.2f%%)</string>
+    <string name="memory_stats">last=%1$.2f MB (%2$.2f%%) avg=%3$.2f MB (%4$.2f%%)</string>
     <string name="memory_no_data">Memory: No data</string>
     <string name="search">Search</string>
     <string name="status">Status</string>
@@ -141,4 +141,13 @@
     <string name="metric_load_1">Load (1 min)</string>
     <string name="metrics_no_data">No data available</string>
     <string name="metrics_partial_data">Recent samples are missing; data may be incomplete.</string>
+    <string name="empty_state_image_description">No droplets</string>
+    <string name="monitoring_cpu_usage">CPU Usage</string>
+    <string name="monitoring_memory_usage">Memory Usage</string>
+    <string name="ssh_details_title">SSH Details</string>
+    <string name="ssh_details_description">Use the following SSH command to access your server:</string>
+    <string name="ssh_details_command_placeholder">ssh root@IP_ADDRESS</string>
+    <string name="ssh_details_ip_placeholder">IP_ADDRESS</string>
+    <string name="ssh_details_copy_command">Copy Command</string>
+    <string name="ssh_details_copy_ip">Copy IP</string>
 </resources>
