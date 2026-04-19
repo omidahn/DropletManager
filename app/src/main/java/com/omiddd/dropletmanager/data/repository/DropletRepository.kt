@@ -1,11 +1,12 @@
 package com.omiddd.dropletmanager.data.repository
 
+import com.omiddd.dropletmanager.data.api.DigitalOceanService
 import com.omiddd.dropletmanager.data.api.RetrofitInstance
 import com.omiddd.dropletmanager.data.model.*
+import com.google.gson.JsonParser
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import org.json.JSONObject
 import retrofit2.Response
 import java.io.IOException
 import java.time.Instant
@@ -16,7 +17,9 @@ sealed class Result<out T> {
     object Loading : Result<Nothing>()
 }
 
-class DropletRepository {
+open class DropletRepository(
+    private val serviceFactory: (String) -> DigitalOceanService = RetrofitInstance::getClient
+) {
 
     private suspend fun <T, R> safeApiCall(
         retries: Int = 0,
@@ -75,7 +78,7 @@ class DropletRepository {
 
     fun getDroplets(token: String): Flow<Result<List<Droplet>>> = flow {
         emit(Result.Loading)
-        val api = RetrofitInstance.getClient(token)
+        val api = serviceFactory(token)
         when (val response = safeApiCall(retries = 2, apiCall = { api.listDroplets() }, onSuccess = {
             it.body()?.droplets?.let { droplets -> Result.Success(droplets) } ?: Result.Error("Empty response")
         })) {
@@ -85,8 +88,8 @@ class DropletRepository {
         }
     }
 
-    suspend fun listRegions(token: String): Result<List<Region>> {
-        val api = RetrofitInstance.getClient(token)
+    open suspend fun listRegions(token: String): Result<List<Region>> {
+        val api = serviceFactory(token)
         return when (val response = safeApiCall(retries = 2, apiCall = { api.listRegions() }, onSuccess = {
             it.body()?.regions?.let { regions -> Result.Success(regions) } ?: Result.Error("Empty response")
         })) {
@@ -96,8 +99,8 @@ class DropletRepository {
         }
     }
 
-    suspend fun listSizes(token: String): Result<List<Size>> {
-        val api = RetrofitInstance.getClient(token)
+    open suspend fun listSizes(token: String): Result<List<Size>> {
+        val api = serviceFactory(token)
         return when (val response = safeApiCall(retries = 2, apiCall = { api.listSizes() }, onSuccess = {
             it.body()?.sizes?.let { sizes -> Result.Success(sizes) } ?: Result.Error("Empty response")
         })) {
@@ -107,8 +110,8 @@ class DropletRepository {
         }
     }
 
-    suspend fun listImages(token: String): Result<List<Image>> {
-        val api = RetrofitInstance.getClient(token)
+    open suspend fun listImages(token: String): Result<List<Image>> {
+        val api = serviceFactory(token)
         return when (val response = safeApiCall(retries = 2, apiCall = { api.listImages() }, onSuccess = {
             it.body()?.images?.let { images -> Result.Success(images) } ?: Result.Error("Empty response")
         })) {
@@ -118,8 +121,8 @@ class DropletRepository {
         }
     }
 
-    suspend fun createDroplet(token: String, request: DropletCreationRequest): Result<Droplet> {
-        val api = RetrofitInstance.getClient(token)
+    open suspend fun createDroplet(token: String, request: DropletCreationRequest): Result<Droplet> {
+        val api = serviceFactory(token)
         return when (val response = safeApiCall(apiCall = { api.createDroplet(request) }, onSuccess = {
             it.body()?.droplet?.let { droplet -> Result.Success(droplet) } ?: Result.Error("Droplet created but response is empty")
         })) {
@@ -129,8 +132,8 @@ class DropletRepository {
         }
     }
 
-    suspend fun listSshKeys(token: String): Result<List<SshKey>> {
-        val api = RetrofitInstance.getClient(token)
+    open suspend fun listSshKeys(token: String): Result<List<SshKey>> {
+        val api = serviceFactory(token)
         return when (val response = safeApiCall(retries = 2, apiCall = { api.listSshKeys() }, onSuccess = {
             it.body()?.ssh_keys?.let { keys -> Result.Success(keys) } ?: Result.Error("Empty response")
         })) {
@@ -141,17 +144,17 @@ class DropletRepository {
     }
 
     suspend fun deleteDroplet(token: String, dropletId: Int): Result<Unit> {
-        val api = RetrofitInstance.getClient(token)
+        val api = serviceFactory(token)
         return safeApiCall(apiCall = { api.deleteDroplet(dropletId) }, onSuccess = { _ -> Result.Success(Unit) })
     }
 
-    suspend fun performAction(token: String, dropletId: Int, action: DropletAction, name: String? = null): Result<Action> {
-        val api = RetrofitInstance.getClient(token)
+    suspend fun performAction(token: String, dropletId: Int, action: DropletAction, name: String? = null): Result<Unit> {
+        val api = serviceFactory(token)
         val request = ActionRequest(action.key, name)
-        return when (val response = safeApiCall(apiCall = { api.performAction(dropletId, request) }, onSuccess = {
-            it.body()?.action?.let { action -> Result.Success(action) } ?: Result.Error("Action response is empty")
+        return when (val response = safeApiCall(apiCall = { api.performAction(dropletId, request) }, onSuccess = { _ ->
+            Result.Success(Unit)
         })) {
-            is Result.Success -> Result.Success(response.data)
+            is Result.Success -> Result.Success(Unit)
             is Result.Error -> response
             is Result.Loading -> Result.Loading
         }
@@ -159,7 +162,7 @@ class DropletRepository {
 
     fun getCpuMetrics(token: String, dropletId: Int): Flow<Result<List<MetricPoint>>> = flow {
         emit(Result.Loading)
-        val api = RetrofitInstance.getClient(token)
+        val api = serviceFactory(token)
         val (start, end) = twentyFourHourWindowSeconds()
         val result = parseMetricsResult(safeApiCall(retries = 2, apiCall = { api.getCpuMetrics(dropletId, start, end) }))
         emit(result)
@@ -167,7 +170,7 @@ class DropletRepository {
 
     fun getMemoryMetrics(token: String, dropletId: Int): Flow<Result<List<MetricPoint>>> = flow {
         emit(Result.Loading)
-        val api = RetrofitInstance.getClient(token)
+        val api = serviceFactory(token)
         val (start, end) = twentyFourHourWindowSeconds()
 
         val usedResult = parseMetricsResult(safeApiCall(retries = 2, apiCall = { api.getMemoryUtilizationDroplet(dropletId, start, end) }))
@@ -202,7 +205,7 @@ class DropletRepository {
 
     fun getBandwidth(token: String, dropletId: Int, interfaceName: String, direction: String): Flow<Result<List<MetricPoint>>> = flow {
         emit(Result.Loading)
-        val api = RetrofitInstance.getClient(token)
+        val api = serviceFactory(token)
         val (start, end) = twentyFourHourWindowSeconds()
         val result = parseMetricsResult(safeApiCall(retries = 2, apiCall = { api.getBandwidth(dropletId, interfaceName, direction, start, end) }))
         emit(result)
@@ -210,7 +213,7 @@ class DropletRepository {
 
     fun getFilesystemUsed(token: String, dropletId: Int): Flow<Result<List<MetricPoint>>> = flow {
         emit(Result.Loading)
-        val api = RetrofitInstance.getClient(token)
+        val api = serviceFactory(token)
         val (start, end) = twentyFourHourWindowSeconds()
 
         val sizeResult = parseMetricsResult(safeApiCall(retries = 2, apiCall = { api.getFilesystemSize(dropletId, start, end) }))
@@ -239,14 +242,14 @@ class DropletRepository {
 
     fun getLoad1(token: String, dropletId: Int): Flow<Result<List<MetricPoint>>> = flow {
         emit(Result.Loading)
-        val api = RetrofitInstance.getClient(token)
+        val api = serviceFactory(token)
         val (start, end) = twentyFourHourWindowSeconds()
         val result = parseMetricsResult(safeApiCall(retries = 2, apiCall = { api.getLoad1(dropletId, start, end) }))
         emit(result)
     }
 
     suspend fun listProjects(token: String): Result<List<Project>> {
-        val api = RetrofitInstance.getClient(token)
+        val api = serviceFactory(token)
         return when (val response = safeApiCall(retries = 2, apiCall = { api.listProjects() }, onSuccess = {
             it.body()?.projects?.let { projects -> Result.Success(projects) } ?: Result.Error("Empty response")
         })) {
@@ -257,10 +260,10 @@ class DropletRepository {
     }
 
     suspend fun setDefaultProject(token: String, projectId: String): Result<Unit> {
-        val api = RetrofitInstance.getClient(token)
-        return when (safeApiCall(apiCall = { api.setDefaultProject(projectId, mapOf("is_default" to true)) }, onSuccess = { _ -> Result.Success(Unit) })) {
+        val api = serviceFactory(token)
+        return when (val result = safeApiCall(apiCall = { api.setDefaultProject(projectId, mapOf("is_default" to true)) }, onSuccess = { _ -> Result.Success(Unit) })) {
             is Result.Success -> Result.Success(Unit)
-            is Result.Error -> Result.Error("Failed to set default project")
+            is Result.Error -> result
             is Result.Loading -> Result.Loading
         }
     }
@@ -282,12 +285,13 @@ class DropletRepository {
     }
 
     private fun getErrorMessage(response: Response<*>): String {
+        val errorBody = response.errorBody()?.string()
         return try {
-            val errorBody = response.errorBody()?.string() ?: "Unknown error"
-            val json = JSONObject(errorBody)
-            json.optString("message", errorBody)
+            val body = errorBody ?: "Unknown error"
+            val json = JsonParser.parseString(body).asJsonObject
+            json.get("message")?.asString?.ifBlank { body } ?: body
         } catch (_: Exception) {
-            "Unknown error: ${response.code()}"
+            errorBody?.takeIf { it.isNotBlank() } ?: "Unknown error: ${response.code()}"
         }
     }
 

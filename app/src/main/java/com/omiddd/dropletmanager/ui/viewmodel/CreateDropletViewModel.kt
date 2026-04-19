@@ -50,19 +50,24 @@ class CreateDropletViewModel(
                 val imagesResult = imagesDeferred.await()
                 val sshKeysResult = sshKeysDeferred.await()
 
-                val errors = listOf(regionsResult, sizesResult, imagesResult, sshKeysResult)
+                val errors = listOf(regionsResult, sizesResult, imagesResult)
                     .filterIsInstance<Result.Error>()
                     .map { it.message }
 
                 if (errors.isNotEmpty()) {
                     _state.value = _state.value.copy(loading = false, error = errors.joinToString("\n"))
                 } else {
+                    val sshKeys = when (sshKeysResult) {
+                        is Result.Success -> sshKeysResult.data
+                        is Result.Error -> emptyList()
+                        is Result.Loading -> emptyList()
+                    }
                     _state.value = _state.value.copy(
                         loading = false,
                         regions = (regionsResult as Result.Success).data,
                         sizes = (sizesResult as Result.Success).data,
                         images = (imagesResult as Result.Success).data,
-                        sshKeys = (sshKeysResult as? Result.Success)?.data ?: emptyList()
+                        sshKeys = sshKeys
                     )
                 }
             }

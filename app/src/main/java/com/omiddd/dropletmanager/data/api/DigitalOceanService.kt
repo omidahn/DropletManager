@@ -24,13 +24,13 @@ interface DigitalOceanService {
     suspend fun listImages(@Query("type") type: String = "distribution"): Response<ImagesResponse>
 
     @GET("v2/droplets/{id}")
-    suspend fun getDroplet(@Path("id") dropletId: Int): Response<DropletResponse>
+    suspend fun getDroplet(@Path("id") dropletId: Int): Response<SingleDropletResponse>
 
     @POST("v2/droplets/{id}/actions")
     suspend fun performAction(
         @Path("id") dropletId: Int,
         @Body action: ActionRequest
-    ): Response<ActionResponse>
+    ): Response<Unit>
 
     @GET("v2/droplets/{id}/snapshots")
     suspend fun getSnapshots(@Path("id") dropletId: Int): Response<SnapshotResponse>
@@ -114,8 +114,8 @@ data class DropletResponse(
     val meta: Meta
 )
 
-data class ActionResponse(
-    val action: Action
+data class SingleDropletResponse(
+    val droplet: Droplet
 )
 
 data class SnapshotResponse(

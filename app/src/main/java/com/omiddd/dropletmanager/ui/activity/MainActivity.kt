@@ -1,6 +1,7 @@
 package com.omiddd.dropletmanager.ui.activity
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -24,7 +25,6 @@ import com.omiddd.dropletmanager.data.repository.DropletRepository
 import com.omiddd.dropletmanager.ui.compose.*
 import com.omiddd.dropletmanager.ui.theme.DropletManagerTheme
 import com.omiddd.dropletmanager.ui.viewmodel.*
-import com.omiddd.dropletmanager.utils.SshKeyManager
 import com.omiddd.dropletmanager.utils.ThemePreferences
 import com.omiddd.dropletmanager.utils.TokenManager
 import kotlinx.coroutines.launch
@@ -157,7 +157,7 @@ private fun MainActivity.MainScreen(
                         scope.launch { snackbarHostState.showSnackbar(resolved) }
                     }
                 },
-                onOpenConsole = { launchSshConsole(it) },
+                onOpenConsole = { openDropletConsole(it) },
                 query = listState.query,
                 onQueryChange = { listVm.setQuery(it) },
                 statusOptions = listState.statusOptions,
@@ -215,7 +215,7 @@ private fun MainActivity.MainScreen(
                 }
                 selectedDropletState.value = null
             },
-            onOpenConsole = { launchSshConsole(droplet) },
+            onOpenConsole = { openDropletConsole(droplet) },
             onOpenUsage = { launchUsageMetrics(droplet, token) },
             accruedCost = listVm.getAccruedCostForDroplet(droplet),
             onClose = { selectedDropletState.value = null }
@@ -223,17 +223,14 @@ private fun MainActivity.MainScreen(
     }
 }
 
-private fun MainActivity.launchSshConsole(droplet: Droplet) {
-    val ip = droplet.networks.v4.firstOrNull { it.type == "public" }?.ip_address
-    if (ip != null) {
-        val user = SshKeyManager(this).getUsername() ?: getString(R.string.ssh_default_user)
-        val intent = Intent(this, SshConsoleActivity::class.java).apply {
-            putExtra(SshConsoleActivity.EXTRA_HOST, ip)
-            putExtra(SshConsoleActivity.EXTRA_USER, user)
-        }
-        startActivity(intent)
+private fun MainActivity.openDropletConsole(droplet: Droplet) {
+    val consoleUri = Uri.parse("https://cloud.digitalocean.com/droplets/${droplet.id}/terminal/ui/")
+    val intent = Intent(Intent.ACTION_VIEW, consoleUri)
+    val chooser = Intent.createChooser(intent, getString(R.string.open_console))
+    if (intent.resolveActivity(packageManager) != null) {
+        startActivity(chooser)
     } else {
-        Toast.makeText(this, getString(R.string.no_public_ip_for_ssh), Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, getString(R.string.no_browser_available), Toast.LENGTH_SHORT).show()
     }
 }
 

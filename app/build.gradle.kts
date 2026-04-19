@@ -15,8 +15,8 @@ android {
         applicationId = "com.omiddd.dropletmanager"
         minSdk = 27
         targetSdk = 36
-        versionCode = 9
-        versionName = "1.0.6"
+        versionCode = 12
+        versionName = "1.0.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -42,8 +42,8 @@ android {
     buildTypes {
         release {
             // Enable R8 code shrinking and resource shrinking for smaller release artifacts
-            isMinifyEnabled = true
-            isShrinkResources = true
+            isMinifyEnabled = false
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -106,6 +106,7 @@ dependencies {
 
     // Testing
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.test.ext)
     androidTestImplementation(libs.espresso.core)
 

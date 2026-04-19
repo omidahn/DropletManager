@@ -93,6 +93,8 @@
     <string name="features">Features</string>
     <string name="tags">Tags</string>
     <string name="console">Console</string>
+    <string name="open_console">Open Console</string>
+    <string name="no_browser_available">No browser available to open the DigitalOcean console</string>
     <string name="usage">Usage</string>
     <string name="detail_label_vcpus">vCPUs</string>
     <string name="detail_label_memory">Memory</string>
