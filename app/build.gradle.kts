@@ -15,11 +15,14 @@ android {
         applicationId = "com.omiddd.dropletmanager"
         minSdk = 27
         targetSdk = 36
-        versionCode = 12
-        versionName = "1.0.9"
-        resourceConfigurations.add("en")
+        versionCode = 14
+        versionName = "1.0.11"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    androidResources {
+        localeFilters += listOf("en")
     }
 
     val keystorePath = System.getenv("KEYSTORE_PATH")
