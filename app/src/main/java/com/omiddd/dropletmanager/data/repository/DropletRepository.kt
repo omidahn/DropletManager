@@ -143,6 +143,17 @@ open class DropletRepository(
         }
     }
 
+    open suspend fun createSshKey(token: String, request: CreateSshKeyRequest): Result<SshKey> {
+        val api = serviceFactory(token)
+        return when (val response = safeApiCall(apiCall = { api.createSshKey(request) }, onSuccess = {
+            it.body()?.sshKey?.let { key -> Result.Success(key) } ?: Result.Error("SSH key created but response is empty")
+        })) {
+            is Result.Success -> Result.Success(response.data)
+            is Result.Error -> response
+            is Result.Loading -> Result.Loading
+        }
+    }
+
     suspend fun deleteDroplet(token: String, dropletId: Int): Result<Unit> {
         val api = serviceFactory(token)
         return safeApiCall(apiCall = { api.deleteDroplet(dropletId) }, onSuccess = { _ -> Result.Success(Unit) })

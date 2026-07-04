@@ -107,6 +107,9 @@ interface DigitalOceanService {
 
     @GET("v2/account/keys")
     suspend fun listSshKeys(): Response<SshKeysResponse>
+
+    @POST("v2/account/keys")
+    suspend fun createSshKey(@Body request: CreateSshKeyRequest): Response<SshKeyResponse>
 }
 
 data class DropletResponse(

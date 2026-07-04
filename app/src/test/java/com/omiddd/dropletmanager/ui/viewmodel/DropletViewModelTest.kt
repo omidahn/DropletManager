@@ -18,6 +18,7 @@ import com.omiddd.dropletmanager.data.model.NetworkV4
 import com.omiddd.dropletmanager.data.model.Networks
 import com.omiddd.dropletmanager.data.model.ProjectsResponse
 import com.omiddd.dropletmanager.data.model.Region
+import com.omiddd.dropletmanager.data.model.SshKeyResponse
 import com.omiddd.dropletmanager.data.model.SshKeysResponse
 import com.omiddd.dropletmanager.data.model.Size
 import com.omiddd.dropletmanager.data.repository.DropletRepository
@@ -123,6 +124,7 @@ class DropletViewModelTest {
         override suspend fun listProjects() = notImplemented<ProjectsResponse>()
         override suspend fun setDefaultProject(projectId: String, request: Map<String, Boolean>) = notImplemented<ProjectResponse>()
         override suspend fun listSshKeys() = notImplemented<SshKeysResponse>()
+        override suspend fun createSshKey(request: com.omiddd.dropletmanager.data.model.CreateSshKeyRequest) = notImplemented<SshKeyResponse>()
 
         private suspend fun <T> notImplemented(): retrofit2.Response<T> {
             throw NotImplementedError("Not needed in this test")

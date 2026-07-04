@@ -142,6 +142,7 @@ class DropletRepositoryTest {
         override suspend fun listProjects(): Response<ProjectsResponse> = notImplemented()
         override suspend fun setDefaultProject(projectId: String, request: Map<String, Boolean>): Response<ProjectResponse> = notImplemented()
         override suspend fun listSshKeys(): Response<com.omiddd.dropletmanager.data.model.SshKeysResponse> = notImplemented()
+        override suspend fun createSshKey(request: com.omiddd.dropletmanager.data.model.CreateSshKeyRequest): Response<com.omiddd.dropletmanager.data.model.SshKeyResponse> = notImplemented()
 
         private fun <T> notImplemented(): Response<T> {
             throw NotImplementedError("Not needed in this test")

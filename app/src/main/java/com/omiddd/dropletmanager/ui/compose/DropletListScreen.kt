@@ -118,7 +118,7 @@ fun DropletListScreen(
                     ElevatedCard(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
                         shape = MaterialTheme.shapes.extraLarge,
                         colors = CardDefaults.elevatedCardColors(
                             containerColor = MaterialTheme.colorScheme.surface
@@ -127,16 +127,21 @@ fun DropletListScreen(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(14.dp)
+                                .padding(12.dp)
                         ) {
-                            Text("Fleet overview", style = MaterialTheme.typography.titleLarge)
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                "Search, filter, and act on droplets without leaving the list.",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("Fleet overview", style = MaterialTheme.typography.titleMedium)
+                                Text(
+                                    "${droplets.size} droplets",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(10.dp))
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 OutlinedTextField(
                                     value = query,
@@ -154,7 +159,7 @@ fun DropletListScreen(
                                     Text(stringResource(R.string.refresh))
                                 }
                             }
-                            Spacer(modifier = Modifier.height(12.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
                             FilterRow(
                                 statusOptions = statusOptions,
                                 selectedStatus = selectedStatus,
@@ -164,9 +169,9 @@ fun DropletListScreen(
                                 onRegionChange = onRegionChange,
                                 onSwitchProject = onSwitchProject
                             )
-                            Spacer(modifier = Modifier.height(12.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
                             StatusSummary(droplets)
-                            Spacer(modifier = Modifier.height(12.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
                             CostSummary(summary = costSummary)
                         }
                     }
@@ -320,7 +325,7 @@ private fun DropletRow(
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -523,13 +528,5 @@ private fun CostSummary(summary: CostSummary) {
             Text(stringResource(R.string.monthly_with_backups_cost, summary.totalMonthlyWithBackups), style = MaterialTheme.typography.bodyMedium)
             Text(stringResource(R.string.accrued_this_month_est, summary.accruedThisMonth), style = MaterialTheme.typography.bodyMedium)
         }
-    }
-}
-
-private fun isDropletRunning(status: String?): Boolean {
-    if (status == null) return false
-    return when (status.trim().lowercase()) {
-        "active", "on", "running", "online", "up" -> true
-        else -> false
     }
 }
