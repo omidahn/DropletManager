@@ -42,6 +42,8 @@
     <string name="refresh">Refresh</string>
     <string name="current_project">Current Project</string>
     <string name="switch_project">Switch Project</string>
+    <string name="report_bug">Report Bug</string>
+    <string name="no_bug_report_app">No app available to share a bug report</string>
     <string name="show_cost_details">Show Cost Details</string>
     <string name="change_token">Change Token</string>
     <string name="logout">Logout</string>

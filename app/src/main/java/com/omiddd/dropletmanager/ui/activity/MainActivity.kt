@@ -1,6 +1,8 @@
 package com.omiddd.dropletmanager.ui.activity
 
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -11,7 +13,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.BugReport
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,6 +26,8 @@ import com.omiddd.dropletmanager.data.repository.DropletRepository
 import com.omiddd.dropletmanager.ui.compose.*
 import com.omiddd.dropletmanager.ui.theme.DropletManagerTheme
 import com.omiddd.dropletmanager.ui.viewmodel.*
+import com.omiddd.dropletmanager.utils.BugReportComposer
+import com.omiddd.dropletmanager.utils.CrashReporter
 import com.omiddd.dropletmanager.utils.SshKeyManager
 import com.omiddd.dropletmanager.utils.ThemePreferences
 import com.omiddd.dropletmanager.utils.TokenManager
@@ -130,22 +133,16 @@ private fun MainActivity.MainScreen(
 
     Scaffold(
         topBar = {
+            val currentScreen = when (selectedTab) {
+                1 -> stringResource(R.string.tab_create)
+                2 -> stringResource(R.string.tab_settings)
+                else -> stringResource(R.string.tab_droplets)
+            }
             CenterAlignedTopAppBar(
                 title = { Text(stringResource(R.string.app_name)) },
                 actions = {
-                    if (selectedTab == 0) {
-                        IconButton(onClick = { listVm.loadDroplets() }) {
-                            Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.refresh))
-                        }
-                    }
-                    // Debug-only Crashlytics test button
-                    if (BuildConfig.DEBUG) {
-                        IconButton(onClick = {
-                            // throw a runtime exception to test Crashlytics setup
-                            throw RuntimeException("Test Crash from Debug button")
-                        }) {
-                            Icon(Icons.Default.BugReport, contentDescription = "Test crash")
-                        }
+                    IconButton(onClick = { openBugReport(currentScreen) }) {
+                        Icon(Icons.Default.BugReport, contentDescription = stringResource(R.string.report_bug))
                     }
                 }
             )
@@ -291,4 +288,46 @@ private fun MainActivity.launchUsageMetrics(droplet: Droplet, token: String) {
         putExtra(UsageMetricsActivity.EXTRA_TOKEN, token)
     }
     startActivity(intent)
+}
+
+private fun MainActivity.openBugReport(screenName: String) {
+    CrashReporter.log("Bug report opened from $screenName")
+
+    val draft = BugReportComposer.compose(
+        appName = getString(R.string.app_name),
+        screenName = screenName,
+        packageName = packageName,
+        versionName = BuildConfig.VERSION_NAME,
+        versionCode = BuildConfig.VERSION_CODE,
+        manufacturer = Build.MANUFACTURER,
+        model = Build.MODEL,
+        sdkInt = Build.VERSION.SDK_INT
+    )
+
+    val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+        data = Uri.parse("mailto:")
+        putExtra(Intent.EXTRA_SUBJECT, draft.subject)
+        putExtra(Intent.EXTRA_TEXT, draft.body)
+    }
+    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_SUBJECT, draft.subject)
+        putExtra(Intent.EXTRA_TEXT, draft.body)
+    }
+
+    val chooser = when {
+        emailIntent.resolveActivity(packageManager) != null -> {
+            Intent.createChooser(emailIntent, getString(R.string.report_bug))
+        }
+        shareIntent.resolveActivity(packageManager) != null -> {
+            Intent.createChooser(shareIntent, getString(R.string.report_bug))
+        }
+        else -> null
+    }
+
+    if (chooser != null) {
+        startActivity(chooser)
+    } else {
+        Toast.makeText(this, getString(R.string.no_bug_report_app), Toast.LENGTH_SHORT).show()
+    }
 }

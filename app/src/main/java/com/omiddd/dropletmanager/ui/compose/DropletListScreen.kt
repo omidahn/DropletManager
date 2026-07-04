@@ -1,13 +1,11 @@
 package com.omiddd.dropletmanager.ui.compose
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,13 +18,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PowerSettingsNew
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Storage
@@ -39,12 +36,11 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -68,7 +64,6 @@ import com.omiddd.dropletmanager.data.model.Droplet
 import com.omiddd.dropletmanager.data.model.DropletAction
 import com.omiddd.dropletmanager.ui.viewmodel.CostSummary
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DropletListScreen(
     droplets: List<Droplet>,
@@ -115,65 +110,34 @@ fun DropletListScreen(
 
             else -> {
                 Column(modifier = Modifier.fillMaxSize()) {
-                    ElevatedCard(
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 8.dp),
-                        shape = MaterialTheme.shapes.extraLarge,
-                        colors = CardDefaults.elevatedCardColors(
-                            containerColor = MaterialTheme.colorScheme.surface
-                        )
+                            .padding(horizontal = 12.dp, vertical = 4.dp)
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text("Fleet overview", style = MaterialTheme.typography.titleMedium)
-                                Text(
-                                    "${droplets.size} droplets",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                OutlinedTextField(
-                                    value = query,
-                                    onValueChange = onQueryChange,
-                                    label = { Text(stringResource(R.string.search)) },
-                                    placeholder = { Text("Name or IP") },
-                                    singleLine = true,
-                                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                                    modifier = Modifier.weight(1f)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                FilledTonalButton(onClick = onRefresh) {
-                                    Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.refresh))
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(stringResource(R.string.refresh))
-                                }
-                            }
-                            Spacer(modifier = Modifier.height(10.dp))
-                            FilterRow(
-                                statusOptions = statusOptions,
-                                selectedStatus = selectedStatus,
-                                onStatusChange = onStatusChange,
-                                regionOptions = regionOptions,
-                                selectedRegion = selectedRegion,
-                                onRegionChange = onRegionChange,
-                                onSwitchProject = onSwitchProject
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            StatusSummary(droplets)
-                            Spacer(modifier = Modifier.height(10.dp))
-                            CostSummary(summary = costSummary)
-                        }
+                        OutlinedTextField(
+                            value = query,
+                            onValueChange = onQueryChange,
+                            placeholder = { Text("Search droplets or IPs") },
+                            singleLine = true,
+                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        FilterRow(
+                            statusOptions = statusOptions,
+                            selectedStatus = selectedStatus,
+                            onStatusChange = onStatusChange,
+                            regionOptions = regionOptions,
+                            selectedRegion = selectedRegion,
+                            onRegionChange = onRegionChange,
+                            onSwitchProject = onSwitchProject
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        OverviewSummaryText(
+                            droplets = droplets,
+                            summary = costSummary
+                        )
                     }
 
                     if (droplets.isEmpty()) {
@@ -362,7 +326,6 @@ private fun DropletRow(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun FilterRow(
     statusOptions: List<String>,
@@ -374,52 +337,53 @@ private fun FilterRow(
     onSwitchProject: () -> Unit
 ) {
     val allString = stringResource(R.string.all)
-    FlowRow(
+    Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         FilterControl(
+            modifier = Modifier.weight(1f),
             label = stringResource(R.string.status),
             options = listOf(allString) + statusOptions,
             selected = selectedStatus ?: allString,
             onSelected = { onStatusChange(if (it == allString) null else it) }
         )
         FilterControl(
+            modifier = Modifier.weight(1f),
             label = stringResource(R.string.region),
             options = listOf(allString) + regionOptions,
             selected = selectedRegion ?: allString,
             onSelected = { onRegionChange(if (it == allString) null else it) }
         )
-        FilledTonalButton(onClick = onSwitchProject) {
-            Text(stringResource(R.string.switch_project))
+        FilledTonalIconButton(
+            onClick = onSwitchProject,
+            modifier = Modifier.size(40.dp)
+        ) {
+            Icon(Icons.Default.FilterList, contentDescription = stringResource(R.string.switch_project))
         }
     }
 }
 
 @Composable
 private fun FilterControl(
+    modifier: Modifier = Modifier,
     label: String,
     options: List<String>,
     selected: String,
     onSelected: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    Column {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        OutlinedButton(
+    Box(modifier = modifier) {
+        AssistChip(
             onClick = { expanded = true },
-            modifier = Modifier.width(IntrinsicSize.Min)
-        ) {
-            Text(selected)
-            Spacer(modifier = Modifier.width(4.dp))
-            Icon(Icons.Default.ArrowDropDown, contentDescription = null)
-        }
+            label = { Text("$label: $selected") },
+            trailingIcon = { Icon(Icons.Default.ArrowDropDown, contentDescription = null) },
+            colors = AssistChipDefaults.assistChipColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        )
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             options.forEach { opt ->
                 DropdownMenuItem(
@@ -435,25 +399,26 @@ private fun FilterControl(
 }
 
 @Composable
-private fun StatusSummary(droplets: List<Droplet>) {
+private fun OverviewSummaryText(droplets: List<Droplet>, summary: CostSummary) {
     if (droplets.isEmpty()) return
     val counts = remember(droplets) {
         droplets.groupBy { it.status.lowercase() }.mapValues { it.value.size }
     }
-    val total = droplets.size
-    val scroll = rememberScrollState()
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .horizontalScroll(scroll),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        SummaryCard(title = stringResource(R.string.total), value = total.toString())
-        counts.forEach { (status, count) ->
-            val label = status.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
-            SummaryCard(title = label, value = count.toString(), status = status)
+    val parts = buildList {
+        add("${droplets.size} total")
+        counts["active"]?.let { add("$it active") }
+        if (summary.totalMonthlyWithBackups > 0.0) {
+            add("$${"%.2f".format(summary.totalMonthlyWithBackups)}/mo")
+        }
+        if (summary.accruedThisMonth > 0.0) {
+            add("$${"%.2f".format(summary.accruedThisMonth)} accrued")
         }
     }
+    Text(
+        text = parts.joinToString(" | "),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
 }
 
 @Composable
@@ -484,49 +449,4 @@ private fun StatusPill(status: String) {
             disabledLabelColor = content
         )
     )
-}
-
-@Composable
-private fun SummaryCard(title: String, value: String, status: String? = null) {
-    val bg = when (status) {
-        "active" -> MaterialTheme.colorScheme.primaryContainer
-        "off", "inactive" -> MaterialTheme.colorScheme.secondaryContainer
-        "error" -> MaterialTheme.colorScheme.errorContainer
-        else -> MaterialTheme.colorScheme.secondaryContainer
-    }
-    val onBg = when (status) {
-        "active" -> MaterialTheme.colorScheme.onPrimaryContainer
-        "off", "inactive" -> MaterialTheme.colorScheme.onSecondaryContainer
-        "error" -> MaterialTheme.colorScheme.onErrorContainer
-        else -> MaterialTheme.colorScheme.onSecondaryContainer
-    }
-    Surface(color = bg, shape = MaterialTheme.shapes.large) {
-        Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
-            Text(title, style = MaterialTheme.typography.labelMedium, color = onBg)
-            Text(value, style = MaterialTheme.typography.titleMedium, color = onBg)
-        }
-    }
-}
-
-@Composable
-private fun CostSummary(summary: CostSummary) {
-    if (summary.totalMonthly == 0.0) return
-
-    Surface(
-        color = MaterialTheme.colorScheme.surfaceVariant,
-        tonalElevation = 0.dp,
-        shape = MaterialTheme.shapes.large
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp)
-        ) {
-            Text(stringResource(R.string.estimated_cost), style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(4.dp))
-            Text(stringResource(R.string.monthly_base_cost, summary.totalMonthly), style = MaterialTheme.typography.bodyMedium)
-            Text(stringResource(R.string.monthly_with_backups_cost, summary.totalMonthlyWithBackups), style = MaterialTheme.typography.bodyMedium)
-            Text(stringResource(R.string.accrued_this_month_est, summary.accruedThisMonth), style = MaterialTheme.typography.bodyMedium)
-        }
-    }
 }
