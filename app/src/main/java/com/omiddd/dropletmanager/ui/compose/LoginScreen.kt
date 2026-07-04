@@ -2,10 +2,20 @@ package com.omiddd.dropletmanager.ui.compose
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LockOpen
+import androidx.compose.material.icons.filled.PrivacyTip
+import androidx.compose.material.icons.filled.RocketLaunch
+import androidx.compose.material.icons.filled.VpnKey
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Button
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -16,6 +26,7 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.omiddd.dropletmanager.R
@@ -43,65 +54,115 @@ fun LoginScreen(
         modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
+        val scroll = rememberScrollState()
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .verticalScroll(scroll)
+                .padding(horizontal = 20.dp, vertical = 28.dp),
             verticalArrangement = Arrangement.Center
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                logoBitmap?.let { bitmap ->
-                    Image(
-                        bitmap = bitmap.asImageBitmap(),
-                        contentDescription = stringResource(R.string.app_name),
-                        modifier = Modifier.size(120.dp)
-                    )
+                Surface(
+                    shape = MaterialTheme.shapes.extraLarge,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    tonalElevation = 6.dp,
+                    modifier = Modifier.size(132.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        logoBitmap?.let { bitmap ->
+                            Image(
+                                bitmap = bitmap.asImageBitmap(),
+                                contentDescription = stringResource(R.string.app_name),
+                                modifier = Modifier.size(92.dp)
+                            )
+                        }
+                    }
                 }
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(18.dp))
                 Text(
                     text = stringResource(R.string.app_name),
-                    style = MaterialTheme.typography.headlineMedium
+                    style = MaterialTheme.typography.headlineLarge
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Manage droplets, monitor usage, and jump into SSH from one screen.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            Spacer(modifier = Modifier.height(24.dp))
-            OutlinedTextField(
-                value = token,
-                onValueChange = { token = it },
-                label = { Text(stringResource(R.string.enter_api_token)) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = { onLogin(token.trim()) },
-                modifier = Modifier.fillMaxWidth()
+            Spacer(modifier = Modifier.height(28.dp))
+            ElevatedCard(
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.extraLarge
             ) {
-                Text(stringResource(R.string.login))
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.LockOpen, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        Text(
+                            text = "Secure API access",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                    Text(
+                        text = "Paste a Personal Access Token to start managing your infrastructure.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    OutlinedTextField(
+                        value = token,
+                        onValueChange = { token = it },
+                        label = { Text(stringResource(R.string.enter_api_token)) },
+                        singleLine = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("login_token")
+                    )
+                    Button(
+                        onClick = { onLogin(token.trim()) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Default.VpnKey, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(stringResource(R.string.login))
+                    }
+                }
             }
-            Spacer(modifier = Modifier.height(8.dp))
-            // Privacy Policy link on login screen
-            Button(
-                onClick = { uriHandler.openUri(privacyUrl) },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.privacy_policy))
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(
-                onClick = { uriHandler.openUri(signUpUrl) },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.sign_up_for_digitalocean))
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-            Button(
-                onClick = { uriHandler.openUri(createTokenUrl) },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.create_api_token))
+            Spacer(modifier = Modifier.height(18.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                OutlinedButton(
+                    onClick = { uriHandler.openUri(createTokenUrl) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Default.VpnKey, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.create_api_token))
+                }
+                OutlinedButton(
+                    onClick = { uriHandler.openUri(signUpUrl) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Default.RocketLaunch, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.sign_up_for_digitalocean))
+                }
+                OutlinedButton(
+                    onClick = { uriHandler.openUri(privacyUrl) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Default.PrivacyTip, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.privacy_policy))
+                }
             }
         }
     }

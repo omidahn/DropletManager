@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
@@ -129,7 +130,7 @@ private fun MainActivity.MainScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
                 title = { Text(stringResource(R.string.app_name)) },
                 actions = {
                     if (selectedTab == 0) {
@@ -143,7 +144,7 @@ private fun MainActivity.MainScreen(
                             // throw a runtime exception to test Crashlytics setup
                             throw RuntimeException("Test Crash from Debug button")
                         }) {
-                            Icon(Icons.Default.Refresh, contentDescription = "Test Crash")
+                            Icon(Icons.Default.BugReport, contentDescription = "Test crash")
                         }
                     }
                 }
