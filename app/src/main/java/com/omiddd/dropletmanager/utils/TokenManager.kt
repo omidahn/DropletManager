@@ -65,13 +65,18 @@ class TokenManager(context: Context) {
     }
 
     fun saveToken(token: String) {
-        LogUtils.d(TAG, "Saving token (length: ${token.length})")
-        sharedPreferences.edit().putString(KEY_API_TOKEN, token).apply()
+        val normalized = token.trim()
+        LogUtils.d(TAG, "Saving token (length: ${normalized.length})")
+        if (normalized.isEmpty()) {
+            sharedPreferences.edit().remove(KEY_API_TOKEN).apply()
+        } else {
+            sharedPreferences.edit().putString(KEY_API_TOKEN, normalized).apply()
+        }
         LogUtils.d(TAG, "Token saved successfully")
     }
 
     fun getToken(): String? {
-        val token = sharedPreferences.getString(KEY_API_TOKEN, null)
+        val token = sharedPreferences.getString(KEY_API_TOKEN, null)?.trim()?.takeIf { it.isNotEmpty() }
         LogUtils.d(TAG, "Retrieved token: ${if (token != null) "present (length: ${token.length})" else "null"}")
         return token
     }
@@ -83,7 +88,7 @@ class TokenManager(context: Context) {
     }
 
     fun hasToken(): Boolean {
-        val hasToken = !getToken().isNullOrEmpty()
+        val hasToken = getToken() != null
         LogUtils.d(TAG, "Checking for token: $hasToken")
         return hasToken
     }

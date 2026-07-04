@@ -109,6 +109,8 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.test.ext)
     androidTestImplementation(libs.espresso.core)
+    androidTestImplementation(libs.espresso.intents)
+    androidTestImplementation(libs.compose.ui.test.junit4)
 
     // Duplicates removed; use catalog references above
 
@@ -123,6 +125,7 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.navigation.compose)
     debugImplementation(libs.compose.ui.tooling)
+    debugImplementation(libs.compose.ui.test.manifest)
     implementation(libs.compose.icons.extended)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)

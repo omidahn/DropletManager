@@ -65,7 +65,10 @@
     <string name="cost_format">Cost Format</string>
     <string name="select_project">Select Project</string>
     <string name="loading_projects">Loading Projects</string>
-    <string name="project_switched">Project Switched</string>
+    <string name="project_switched">Switched to %1$s</string>
+    <string name="project_switch_failed">Failed to switch project</string>
+    <string name="no_projects_available">No projects available</string>
+    <string name="current_project_label">%1$s (current)</string>
     <string name="no_public_ip">No Public IP</string>
     <string name="copied_to_clipboard">Copied to Clipboard</string>
     <string name="error_loading_droplet">Error loading droplet details</string>

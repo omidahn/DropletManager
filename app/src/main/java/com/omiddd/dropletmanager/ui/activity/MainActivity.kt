@@ -1,7 +1,6 @@
 package com.omiddd.dropletmanager.ui.activity
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -25,6 +24,7 @@ import com.omiddd.dropletmanager.data.repository.DropletRepository
 import com.omiddd.dropletmanager.ui.compose.*
 import com.omiddd.dropletmanager.ui.theme.DropletManagerTheme
 import com.omiddd.dropletmanager.ui.viewmodel.*
+import com.omiddd.dropletmanager.utils.SshKeyManager
 import com.omiddd.dropletmanager.utils.ThemePreferences
 import com.omiddd.dropletmanager.utils.TokenManager
 import kotlinx.coroutines.launch
@@ -42,8 +42,7 @@ class MainActivity : ComponentActivity() {
         val token = intent.getStringExtra(LoginActivity.API_TOKEN_KEY) ?: tokenManager.getToken()
 
         if (token.isNullOrEmpty()) {
-            Toast.makeText(this, getString(R.string.no_api_token), Toast.LENGTH_SHORT).show()
-            finish()
+            navigateToLogin(showMissingTokenMessage = true)
             return
         }
 
@@ -78,11 +77,22 @@ class MainActivity : ComponentActivity() {
                     onLogout = {
                         tokenManager.clearToken()
                         Toast.makeText(this, getString(R.string.logged_out), Toast.LENGTH_SHORT).show()
-                        finish()
+                        navigateToLogin()
                     }
                 )
             }
         }
+    }
+
+    private fun navigateToLogin(showMissingTokenMessage: Boolean = false) {
+        if (showMissingTokenMessage) {
+            Toast.makeText(this, getString(R.string.no_api_token), Toast.LENGTH_SHORT).show()
+        }
+        val intent = Intent(this, LoginActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        startActivity(intent)
+        finish()
     }
 }
 
@@ -106,9 +116,14 @@ private fun MainActivity.MainScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val showProjectDialogState = rememberSaveable { mutableStateOf(false) }
+    val showProjectDialog = showProjectDialogState.value
 
     val listState by listVm.uiState.collectAsState()
     val permissionWarning by listVm.permissionWarning.collectAsState()
+    val projects by listVm.projects.collectAsState()
+    val projectsLoading by listVm.projectsLoading.collectAsState()
+    val projectsError by listVm.projectsError.collectAsState()
 
     LaunchedEffect(Unit) { listVm.loadDroplets() }
 
@@ -166,7 +181,10 @@ private fun MainActivity.MainScreen(
                 regionOptions = listState.regionOptions,
                 selectedRegion = listState.regionFilter,
                 onRegionChange = { listVm.setRegionFilter(it) },
-                onSwitchProject = { listVm.loadProjects() },
+                onSwitchProject = {
+                    showProjectDialogState.value = true
+                    listVm.loadProjects()
+                },
                 modifier = Modifier.padding(padding)
             )
             1 -> CreateDropletScreen(
@@ -221,17 +239,46 @@ private fun MainActivity.MainScreen(
             onClose = { selectedDropletState.value = null }
         )
     }
+
+    if (showProjectDialog) {
+        ProjectSelectorDialog(
+            projects = projects,
+            loading = projectsLoading,
+            error = projectsError,
+            onDismiss = { showProjectDialogState.value = false },
+            onSelect = { project ->
+                listVm.setDefaultProject(project.id) { success, message ->
+                    scope.launch {
+                        if (success) {
+                            showProjectDialogState.value = false
+                            listVm.loadProjects()
+                            listVm.loadDroplets()
+                            snackbarHostState.showSnackbar(getString(R.string.project_switched, project.name))
+                        } else {
+                            snackbarHostState.showSnackbar(message ?: getString(R.string.project_switch_failed))
+                        }
+                    }
+                }
+            }
+        )
+    }
 }
 
 private fun MainActivity.openDropletConsole(droplet: Droplet) {
-    val consoleUri = Uri.parse("https://cloud.digitalocean.com/droplets/${droplet.id}/terminal/ui/")
-    val intent = Intent(Intent.ACTION_VIEW, consoleUri)
-    val chooser = Intent.createChooser(intent, getString(R.string.open_console))
-    if (intent.resolveActivity(packageManager) != null) {
-        startActivity(chooser)
-    } else {
-        Toast.makeText(this, getString(R.string.no_browser_available), Toast.LENGTH_SHORT).show()
+    val host = droplet.networks.v4.firstOrNull { it.type == "public" }?.ip_address
+    if (host.isNullOrBlank()) {
+        Toast.makeText(this, getString(R.string.no_public_ip_for_ssh), Toast.LENGTH_SHORT).show()
+        return
     }
+
+    val defaultUser = SshKeyManager(this).getUsername()?.takeIf { it.isNotBlank() }
+        ?: getString(R.string.ssh_default_user)
+
+    val intent = Intent(this, SshConsoleActivity::class.java).apply {
+        putExtra(SshConsoleActivity.EXTRA_HOST, host)
+        putExtra(SshConsoleActivity.EXTRA_USER, defaultUser)
+    }
+    startActivity(intent)
 }
 
 private fun MainActivity.launchUsageMetrics(droplet: Droplet, token: String) {

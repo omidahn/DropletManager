@@ -38,11 +38,12 @@ class LoginActivity : ComponentActivity() {
             DropletManagerTheme(useDarkTheme = dark) {
                 LoginScreen(onLogin = { token ->
                     LogUtils.d(TAG, "Login button clicked, validating token (length: ${'$'}{token.length})")
-                    if (isValidApiToken(token)) {
+                    val normalized = token.trim()
+                    if (isValidApiToken(normalized)) {
                         LogUtils.d(TAG, "Token validation successful, saving token")
-                        tokenManager.saveToken(token)
+                        tokenManager.saveToken(normalized)
                         LogUtils.d(TAG, "Token saved, navigating to MainActivity")
-                        navigateToMainActivity(token)
+                        navigateToMainActivity(normalized)
                     } else {
                         LogUtils.w(TAG, "Invalid token format")
                         Toast.makeText(this, R.string.invalid_api_token, Toast.LENGTH_SHORT).show()
@@ -53,8 +54,7 @@ class LoginActivity : ComponentActivity() {
     }
 
     private fun isValidApiToken(token: String): Boolean {
-        // Accept any non-empty token
-        val isValid = token.isNotEmpty()
+        val isValid = token.isNotBlank()
         LogUtils.d(TAG, "Token validation: $isValid (length: ${token.length})")
         return isValid
     }

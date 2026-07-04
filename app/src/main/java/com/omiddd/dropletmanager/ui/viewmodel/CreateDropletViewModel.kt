@@ -14,6 +14,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 data class CreateUiState(
@@ -32,18 +33,22 @@ class CreateDropletViewModel(
 ) : ViewModel() {
     private val _state = MutableStateFlow(CreateUiState())
     val state: StateFlow<CreateUiState> = _state
+    private var loadOptionsJob: Job? = null
+    private var createJob: Job? = null
 
     fun loadOptions(force: Boolean = false) {
         if (!force && (_state.value.loading || _state.value.regions.isNotEmpty())) return
 
-        viewModelScope.launch {
+        loadOptionsJob?.cancel()
+        val requestToken = token
+        loadOptionsJob = viewModelScope.launch {
             _state.value = _state.value.copy(loading = true, error = null)
 
             coroutineScope {
-                val regionsDeferred = async { repository.listRegions(token) }
-                val sizesDeferred = async { repository.listSizes(token) }
-                val imagesDeferred = async { repository.listImages(token) }
-                val sshKeysDeferred = async { repository.listSshKeys(token) }
+                val regionsDeferred = async { repository.listRegions(requestToken) }
+                val sizesDeferred = async { repository.listSizes(requestToken) }
+                val imagesDeferred = async { repository.listImages(requestToken) }
+                val sshKeysDeferred = async { repository.listSshKeys(requestToken) }
 
                 val regionsResult = regionsDeferred.await()
                 val sizesResult = sizesDeferred.await()
@@ -53,6 +58,8 @@ class CreateDropletViewModel(
                 val errors = listOf(regionsResult, sizesResult, imagesResult)
                     .filterIsInstance<Result.Error>()
                     .map { it.message }
+
+                if (requestToken != token) return@coroutineScope
 
                 if (errors.isNotEmpty()) {
                     _state.value = _state.value.copy(loading = false, error = errors.joinToString("\n"))
@@ -75,22 +82,32 @@ class CreateDropletViewModel(
     }
 
     fun create(request: DropletCreationRequest, onResult: (Boolean, String?) -> Unit) {
-        viewModelScope.launch {
+        createJob?.cancel()
+        val requestToken = token
+        createJob = viewModelScope.launch {
             _state.value = _state.value.copy(loading = true, error = null)
-            when (val res = repository.createDroplet(token, request)) {
+            when (val res = repository.createDroplet(requestToken, request)) {
                 is Result.Success -> {
+                    if (requestToken != token) return@launch
                     _state.value = _state.value.copy(created = res.data)
                     onResult(true, null)
                 }
-                is Result.Error -> onResult(false, res.message)
+                is Result.Error -> {
+                    if (requestToken != token) return@launch
+                    onResult(false, res.message)
+                }
                 is Result.Loading -> {}
             }
-            _state.value = _state.value.copy(loading = false)
+            if (requestToken == token) {
+                _state.value = _state.value.copy(loading = false)
+            }
         }
     }
 
     fun updateToken(newToken: String) {
         if (token == newToken) return
+        loadOptionsJob?.cancel()
+        createJob?.cancel()
         token = newToken
         _state.value = CreateUiState()
         loadOptions(force = true)

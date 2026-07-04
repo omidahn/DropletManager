@@ -6,8 +6,8 @@
    See https://developer.android.com/about/versions/12/backup-restore
 -->
 <full-backup-content>
-    <!--
-   <include domain="sharedpref" path="."/>
-   <exclude domain="sharedpref" path="device.xml"/>
--->
+    <exclude domain="sharedpref" path="secure_prefs.xml" />
+    <exclude domain="sharedpref" path="secure_prefs_ssh.xml" />
+    <exclude domain="sharedpref" path="secure_known_hosts.xml" />
+    <exclude domain="sharedpref" path="androidx.security.crypto.master_key_keyset_prefs.xml" />
 </full-backup-content>

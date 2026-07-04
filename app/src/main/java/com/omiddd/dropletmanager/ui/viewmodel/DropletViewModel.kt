@@ -12,6 +12,7 @@ import com.omiddd.dropletmanager.data.model.MetricPoint
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.Instant
@@ -49,6 +50,8 @@ class DropletViewModel(
     val costSummary: StateFlow<CostSummary> = _costSummary
 
     private var allDroplets: List<Droplet> = emptyList()
+    private var dropletsLoadJob: Job? = null
+    private var projectsLoadJob: Job? = null
 
     private val _permissionWarning = MutableStateFlow(false)
     val permissionWarning: StateFlow<Boolean> = _permissionWarning
@@ -69,8 +72,13 @@ class DropletViewModel(
 
     fun updateToken(newToken: String) {
         if (token == newToken) return
+        dropletsLoadJob?.cancel()
+        projectsLoadJob?.cancel()
         token = newToken
         allDroplets = emptyList()
+        _projects.value = emptyList()
+        _projectsError.value = null
+        _projectsLoading.value = false
         _uiState.value = DropletUiState(
             isLoading = false,
             query = _uiState.value.query,
@@ -81,8 +89,11 @@ class DropletViewModel(
     }
 
     fun loadDroplets() {
-        viewModelScope.launch {
-            repository.getDroplets(token).collect { result ->
+        dropletsLoadJob?.cancel()
+        val requestToken = token
+        dropletsLoadJob = viewModelScope.launch {
+            repository.getDroplets(requestToken).collect { result ->
+                if (requestToken != token) return@collect
                 when (result) {
                     is Result.Loading -> _uiState.value = _uiState.value.copy(isLoading = true, error = null)
                     is Result.Success -> {
@@ -265,15 +276,20 @@ class DropletViewModel(
     val projectsError: StateFlow<String?> = _projectsError
 
     fun loadProjects() {
-        viewModelScope.launch {
+        projectsLoadJob?.cancel()
+        val requestToken = token
+        projectsLoadJob = viewModelScope.launch {
+            if (requestToken != token) return@launch
             _projectsLoading.value = true
             _projectsError.value = null
-            when (val res = repository.listProjects(token)) {
-                is Result.Success -> _projects.value = res.data
-                is Result.Error -> { checkPermission(res.message); _projectsError.value = res.message }
+            when (val res = repository.listProjects(requestToken)) {
+                is Result.Success -> if (requestToken == token) _projects.value = res.data
+                is Result.Error -> if (requestToken == token) { checkPermission(res.message); _projectsError.value = res.message }
                 is Result.Loading -> Unit
             }
-            _projectsLoading.value = false
+            if (requestToken == token) {
+                _projectsLoading.value = false
+            }
         }
     }
 

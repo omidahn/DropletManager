@@ -8,6 +8,7 @@ import com.omiddd.dropletmanager.data.repository.DropletRepository
 import com.omiddd.dropletmanager.data.repository.Result
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 // State for a single metric
@@ -22,6 +23,12 @@ class UsageMetricsViewModel(
     private val dropletId: Int,
     private val repository: DropletRepository
 ) : ViewModel() {
+    private var cpuJob: Job? = null
+    private var memoryJob: Job? = null
+    private var bandwidthOutJob: Job? = null
+    private var bandwidthInJob: Job? = null
+    private var filesystemJob: Job? = null
+    private var load1Job: Job? = null
 
     private val _cpu = MutableStateFlow(MetricUiState())
     val cpu: StateFlow<MetricUiState> = _cpu
@@ -54,7 +61,8 @@ class UsageMetricsViewModel(
     }
 
     private fun loadCpuMetrics() {
-        viewModelScope.launch {
+        cpuJob?.cancel()
+        cpuJob = viewModelScope.launch {
             repository.getCpuMetrics(token, dropletId).collect { result ->
                 _cpu.value = when (result) {
                     is Result.Loading -> _cpu.value.copy(isLoading = true, error = null)
@@ -66,7 +74,8 @@ class UsageMetricsViewModel(
     }
 
     private fun loadMemoryMetrics() {
-        viewModelScope.launch {
+        memoryJob?.cancel()
+        memoryJob = viewModelScope.launch {
             repository.getMemoryMetrics(token, dropletId).collect { result ->
                 _memory.value = when (result) {
                     is Result.Loading -> _memory.value.copy(isLoading = true, error = null)
@@ -78,7 +87,8 @@ class UsageMetricsViewModel(
     }
 
     private fun loadBandwidth() {
-        viewModelScope.launch {
+        bandwidthOutJob?.cancel()
+        bandwidthOutJob = viewModelScope.launch {
             repository.getBandwidth(token, dropletId, interfaceName = "public", direction = "outbound").collect { res ->
                 _bwOut.value = when (res) {
                     is Result.Loading -> _bwOut.value.copy(isLoading = true, error = null)
@@ -87,7 +97,8 @@ class UsageMetricsViewModel(
                 }
             }
         }
-        viewModelScope.launch {
+        bandwidthInJob?.cancel()
+        bandwidthInJob = viewModelScope.launch {
             repository.getBandwidth(token, dropletId, interfaceName = "public", direction = "inbound").collect { res ->
                 _bwIn.value = when (res) {
                     is Result.Loading -> _bwIn.value.copy(isLoading = true, error = null)
@@ -99,7 +110,8 @@ class UsageMetricsViewModel(
     }
 
     private fun loadFilesystem() {
-        viewModelScope.launch {
+        filesystemJob?.cancel()
+        filesystemJob = viewModelScope.launch {
             repository.getFilesystemUsed(token, dropletId).collect { res ->
                 _fsUsed.value = when (res) {
                     is Result.Loading -> _fsUsed.value.copy(isLoading = true, error = null)
@@ -111,7 +123,8 @@ class UsageMetricsViewModel(
     }
 
     private fun loadLoad1() {
-        viewModelScope.launch {
+        load1Job?.cancel()
+        load1Job = viewModelScope.launch {
             repository.getLoad1(token, dropletId).collect { res ->
                 _load1.value = when (res) {
                     is Result.Loading -> _load1.value.copy(isLoading = true, error = null)
