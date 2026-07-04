@@ -14,6 +14,7 @@ release_build.log
 package-lock.json
 app/src/main/res/drawable-nodpi/playstore.png
 app/google-services.json
+tmp-*.png
 
 # IDE - IntelliJ/Android Studio
 /.idea/
