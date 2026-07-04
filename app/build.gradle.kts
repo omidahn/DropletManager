@@ -17,6 +17,7 @@ android {
         targetSdk = 36
         versionCode = 12
         versionName = "1.0.9"
+        resourceConfigurations.add("en")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -42,8 +43,11 @@ android {
     buildTypes {
         release {
             // Enable R8 code shrinking and resource shrinking for smaller release artifacts
-            isMinifyEnabled = false
-            isShrinkResources = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+            ndk {
+                debugSymbolLevel = "SYMBOL_TABLE"
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -128,10 +132,6 @@ dependencies {
     debugImplementation(libs.compose.ui.test.manifest)
     implementation(libs.compose.icons.extended)
     implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.analytics)
     // Firebase Crashlytics runtime (KTX) - version managed by BOM
     implementation(libs.firebase.crashlytics.ktx)
-    // Firebase App Check
-    implementation(libs.firebase.appcheck.playintegrity)
-    debugImplementation(libs.firebase.appcheck.debug)
 }

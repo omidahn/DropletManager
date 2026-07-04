@@ -70,3 +70,9 @@
 # information used via getGenericSuperclass() / ParameterizedType is preserved.
 # This is much narrower than keeping the entire application package.
 -keep class * extends com.google.gson.reflect.TypeToken { *; }
+
+# The SSH console reflects on JSch host-key accessors at runtime.
+-keepclassmembers class com.jcraft.jsch.HostKey {
+    public byte[] getKey();
+    public byte[] getHostKey();
+}
