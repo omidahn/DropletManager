@@ -20,8 +20,8 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
-# Keep Gson model classes (Retrofit + Gson reflection)
-# Also preserve all annotation and generic metadata needed by Retrofit
+# Keep generic signatures and reflection metadata needed by Retrofit/Gson.
+# Retrofit suspend APIs inspect Continuation<Response<T>> at runtime.
 -keepattributes Signature,
     Exceptions,
     InnerClasses,
@@ -35,7 +35,7 @@
     SourceFile,
     LineNumberTable
 
-# Keep data layer (Retrofit interfaces + DTOs + helpers + Gson models)
+# Keep data layer (Retrofit interfaces + DTOs + helpers + Gson models).
 # Gson relies on field names, so ensure nothing under data.* is obfuscated.
 -keep class com.omiddd.dropletmanager.data.** { *; }
 
@@ -43,10 +43,16 @@
 -dontwarn javax.annotation.**
 -dontwarn org.jetbrains.annotations.**
 
-# Retrofit/OkHttp common rules
+# Retrofit/OkHttp common rules.
 -dontwarn okio.**
 -dontwarn retrofit2.**
 -keep class retrofit2.** { *; }
+
+# Retrofit's annotated service interfaces and suspend Continuation metadata
+# must survive R8 full-mode shrinking.
+-if interface * { @retrofit2.http.* <methods>; }
+-keep,allowobfuscation,allowshrinking interface <1>
+-keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
 
 # Keep Gson runtime classes and related internals used via reflection
 # This prevents R8 from removing or renaming types Gson relies on
@@ -71,8 +77,7 @@
 # This is much narrower than keeping the entire application package.
 -keep class * extends com.google.gson.reflect.TypeToken { *; }
 
-# The SSH console reflects on JSch host-key accessors at runtime.
+# The SSH console reads JSch host keys directly via HostKey#getKey().
 -keepclassmembers class com.jcraft.jsch.HostKey {
-    public byte[] getKey();
-    public byte[] getHostKey();
+    public java.lang.String getKey();
 }

@@ -225,11 +225,7 @@ class SshConsoleViewModel(application: Application) : AndroidViewModel(applicati
 
     private fun extractKeyBytes(hostKey: HostKey): ByteArray? {
         return runCatching {
-            val method = hostKey.javaClass.getMethod("getKey")
-            method.invoke(hostKey) as? ByteArray
-        }.getOrNull() ?: runCatching {
-            val method = hostKey.javaClass.getMethod("getHostKey")
-            method.invoke(hostKey) as? ByteArray
+            Base64.decode(hostKey.getKey(), Base64.DEFAULT)
         }.getOrNull()
     }
 

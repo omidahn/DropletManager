@@ -143,7 +143,35 @@ jobs:
           path: app/build/outputs/native-debug-symbols.zip
           if-no-files-found: error
 
+      - name: Inspect existing GitHub release
+        id: release_probe
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const tag = context.ref.replace("refs/tags/", "");
+            try {
+              const { data: release } = await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag,
+              });
+              core.setOutput("exists", "true");
+              core.setOutput("draft", String(Boolean(release.draft)));
+              core.setOutput("immutable", String(Boolean(release.immutable)));
+              core.setOutput("html_url", release.html_url ?? "");
+            } catch (error) {
+              if (error.status === 404) {
+                core.setOutput("exists", "false");
+                core.setOutput("draft", "false");
+                core.setOutput("immutable", "false");
+                core.setOutput("html_url", "");
+              } else {
+                throw error;
+              }
+            }
+
       - name: Upload GitHub release asset
+        if: steps.release_probe.outputs.immutable != 'true' || steps.release_probe.outputs.draft == 'true'
         uses: softprops/action-gh-release@v2
         with:
           files: |
@@ -152,3 +180,10 @@ jobs:
             app/build/outputs/mapping/release/mapping.txt
             app/build/outputs/native-debug-symbols.zip
           generate_release_notes: true
+
+      - name: Note immutable release skip
+        if: steps.release_probe.outputs.immutable == 'true' && steps.release_probe.outputs.draft != 'true'
+        run: |
+          echo "A published immutable GitHub release already exists for ${GITHUB_REF_NAME}."
+          echo "Skipping release asset upload to avoid failing the build."
+          echo "Download the APK/AAB from the workflow artifacts for this run."
